@@ -4,12 +4,12 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { UtensilsCrossed, LogOut, Sparkles, User, Calendar, BookOpen } from 'lucide-react';
 
 export default function Header({ onOpenAiChat }) {
-  const { user, logout } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   const handleLogout = async () => {
-    await logout();
+    await signOut();
     navigate('/login');
   };
 

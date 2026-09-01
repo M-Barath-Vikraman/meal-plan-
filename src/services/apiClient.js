@@ -6,6 +6,8 @@
  * and single Express server origin in production.
  */
 
+import { fetchAuthSession } from 'aws-amplify/auth';
+
 const BASE_URL = '/api';
 
 /**
@@ -30,9 +32,21 @@ export class ApiError extends Error {
 async function request(endpoint, options = {}) {
   const url = `${BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
 
+  let authHeader = {};
+  try {
+    const session = await fetchAuthSession();
+    const token = session.tokens?.accessToken?.toString();
+    if (token) {
+      authHeader = { Authorization: `Bearer ${token}` };
+    }
+  } catch (err) {
+    // No active token available
+  }
+
   const headers = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
+    ...authHeader,
     ...(options.headers || {}),
   };
 

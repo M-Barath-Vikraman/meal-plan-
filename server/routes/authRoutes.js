@@ -1,12 +1,14 @@
 import { Router } from 'express';
 import { getCurrentUser } from '../controllers/authController.js';
+import requireAuth from '../middleware/requireAuth.js';
 
 const router = Router();
 
 /**
- * Authentication routes placeholder.
- * Future AWS Integration: AWS Cognito User Pools JWT verification.
+ * @route GET /api/auth/me
+ * @desc  Fetch current verified AWS Cognito user profile.
+ * @access Protected (Requires Bearer JWT token)
  */
-router.get('/me', getCurrentUser);
+router.get('/me', requireAuth, getCurrentUser);
 
 export default router;

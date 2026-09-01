@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { UtensilsCrossed, Sparkles, ShieldCheck, HeartPulse, ChevronRight } from 'lucide-react';
+import { UtensilsCrossed, Sparkles, ShieldCheck, HeartPulse } from 'lucide-react';
 
 export default function LoginPage() {
-  const { loginWithGoogle, user } = useAuth();
+  const { signIn, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
@@ -18,10 +18,9 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     setLoading(true);
     try {
-      await loginWithGoogle();
-      navigate('/today');
+      await signIn('Google');
     } catch (err) {
-      console.error('Login failed:', err);
+      console.error('Cognito sign-in error:', err);
     } finally {
       setLoading(false);
     }
@@ -45,7 +44,7 @@ export default function LoginPage() {
           </span>
         </div>
         <span className="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
-          Phase 1 Mock Auth
+          AWS Cognito Auth
         </span>
       </header>
 
@@ -88,12 +87,12 @@ export default function LoginPage() {
         <div className="mt-8 p-6 rounded-3xl bg-slate-800/80 border border-slate-700/80 shadow-2xl backdrop-blur-xl space-y-4">
           <div className="text-center">
             <h2 className="font-bold text-base text-slate-100">Welcome to SmartMeal</h2>
-            <p className="text-xs text-slate-400 mt-0.5">Sign in to manage your daily meal plans</p>
+            <p className="text-xs text-slate-400 mt-0.5">Sign in via AWS Cognito Managed Login</p>
           </div>
 
           <button
             onClick={handleGoogleLogin}
-            disabled={loading}
+            disabled={loading || authLoading}
             className="w-full py-3.5 px-4 bg-white hover:bg-slate-100 text-slate-800 font-bold text-sm rounded-2xl transition-all shadow-lg flex items-center justify-center space-x-3 group disabled:opacity-60"
           >
             {/* Google SVG Icon */}
@@ -116,13 +115,13 @@ export default function LoginPage() {
               />
             </svg>
             <span className="group-hover:translate-x-0.5 transition-transform">
-              {loading ? 'Signing in...' : 'Continue with Google'}
+              {loading ? 'Redirecting to Cognito...' : 'Continue with Google'}
             </span>
           </button>
 
           <p className="text-[11px] text-slate-500 text-center flex items-center justify-center space-x-1">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Frontend demo mode • No real login needed</span>
+            <span>AWS Cognito OAuth 2.0 PKCE Protected</span>
           </p>
         </div>
       </main>

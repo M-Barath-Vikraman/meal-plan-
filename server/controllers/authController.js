@@ -1,25 +1,25 @@
 /**
- * Auth controller providing API placeholders for user authentication.
- * 
- * TODO [Phase 2B - AWS Integration]:
- * Replace with AWS Cognito User Pools authentication, validating JWT Access/ID Tokens passed via Authorization headers.
+ * Auth controller providing verified user profile.
  */
 
 /**
  * GET /api/auth/me
- * Fetch current authenticated user session.
- * TODO: Verify Cognito JWT token with aws-jwt-verify and retrieve user profile.
+ * Returns verified AWS Cognito user profile attached by requireAuth middleware.
  */
 export function getCurrentUser(req, res) {
+  const verifiedUser = req.user;
+
   res.status(200).json({
     success: true,
     user: {
-      id: 'usr_101',
-      name: 'Aarav Sharma',
-      email: 'aarav.sharma@smartmeal.ai',
-      avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
-      dietPreference: 'Healthy Indian Vegetarian',
+      sub: verifiedUser.sub,
+      username: verifiedUser.username,
+      client_id: verifiedUser.client_id,
+      scope: verifiedUser.scope,
+      exp: verifiedUser.exp,
+      token_use: verifiedUser.token_use,
     },
-    message: 'Phase 2A Express auth placeholder. AWS Cognito User Pools integration planned for Phase 2B.',
+    message: 'Verified AWS Cognito authenticated session.',
+    timestamp: new Date().toISOString(),
   });
 }
