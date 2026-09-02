@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import requireAuth from '../middleware/requireAuth.js';
 import {
   getPlanByDate,
   createPlanItem,
@@ -8,10 +9,9 @@ import {
 
 const router = Router();
 
-/**
- * Meal plan routes placeholder.
- * Future AWS Integration: DynamoDB 'smartmeal-plans' table.
- */
+// Protect all meal plan routes with authentication middleware
+router.use(requireAuth);
+
 router.get('/', getPlanByDate);
 router.post('/', createPlanItem);
 router.patch('/:id/complete', togglePlanItemCompletion);

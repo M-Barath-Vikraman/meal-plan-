@@ -52,14 +52,20 @@ export default function FoodListPage() {
   };
 
   const handleSaveFood = async (foodData) => {
-    if (foodData.id) {
-      await updateFood(foodData.id, foodData);
-      if (showNotification) showNotification(`Updated "${foodData.name}"`);
-    } else {
-      await addFood(foodData);
-      if (showNotification) showNotification(`Added "${foodData.name}" to food list`);
+    try {
+      if (foodData.id) {
+        await updateFood(foodData.id, foodData);
+        if (showNotification) showNotification(`Updated "${foodData.name}"`);
+      } else {
+        await addFood(foodData);
+        if (showNotification) showNotification(`Added "${foodData.name}" to food list`);
+      }
+      await loadFoods();
+    } catch (err) {
+      console.error('Error saving food to database:', err);
+      if (showNotification) showNotification(`Error: ${err.message || 'Failed to save food'}`);
+      throw err;
     }
-    await loadFoods();
   };
 
   // Filter foods by search query and category tab

@@ -3,7 +3,6 @@ import {
   signInWithRedirect,
   signOut as amplifySignOut,
   getCurrentUser,
-  fetchUserAttributes,
   fetchAuthSession,
 } from 'aws-amplify/auth';
 import { Hub } from 'aws-amplify/utils';
@@ -20,24 +19,21 @@ export function AuthProvider({ children }) {
     try {
       setLoading(true);
       const cognitoUser = await getCurrentUser();
-      let attributes = {};
-      try {
-        attributes = await fetchUserAttributes();
-      } catch (attrErr) {
-        console.warn('Could not fetch user attributes:', attrErr);
-      }
+      const session = await fetchAuthSession();
+      const idTokenPayload = session.tokens?.idToken?.payload || {};
 
-      const displayName = attributes.name || attributes.email?.split('@')[0] || cognitoUser.username || 'SmartMeal User';
-      const email = attributes.email || `${cognitoUser.username}@smartmeal.ai`;
+      const sub = cognitoUser.userId || idTokenPayload.sub || cognitoUser.username;
+      const email = idTokenPayload.email || `${cognitoUser.username}@smartmeal.ai`;
+      const name = idTokenPayload.name || email.split('@')[0] || cognitoUser.username || 'SmartMeal User';
 
       setUser({
-        id: cognitoUser.userId || cognitoUser.username,
-        sub: cognitoUser.userId,
+        id: sub,
+        sub,
         username: cognitoUser.username,
         email,
-        name: displayName,
-        avatarUrl: attributes.picture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(displayName)}`,
-        attributes,
+        name,
+        avatarUrl: idTokenPayload.picture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name)}`,
+        attributes: idTokenPayload,
       });
     } catch (err) {
       // User is not authenticated

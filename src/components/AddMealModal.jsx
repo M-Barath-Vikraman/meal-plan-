@@ -76,7 +76,7 @@ export default function AddMealModal({
       name: customName.trim(),
       mealType: selectedMealType,
       ingredients: ingArray,
-      calories: customCalories ? Number(customCalories) : 250,
+      calories: customCalories ? Number(customCalories) : 0,
     });
     onClose();
   };

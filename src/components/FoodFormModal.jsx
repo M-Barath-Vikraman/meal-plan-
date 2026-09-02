@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MEAL_TYPES } from '../utils/dateUtils';
-import { X, Utensils } from 'lucide-react';
+import { X, Utensils, AlertCircle, Loader2 } from 'lucide-react';
 
 export default function FoodFormModal({
   isOpen,
@@ -16,8 +16,15 @@ export default function FoodFormModal({
   const [carbs, setCarbs] = useState('');
   const [fat, setFat] = useState('');
 
+  // Loading & error feedback states
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
+
   useEffect(() => {
     if (isOpen) {
+      setErrorMessage(null);
+      setIsSubmitting(false);
+
       if (initialFood) {
         setName(initialFood.name || '');
         setMealType(initialFood.mealType || 'Lunch');
@@ -26,7 +33,7 @@ export default function FoodFormModal({
             ? initialFood.ingredients.join(', ')
             : initialFood.ingredients || ''
         );
-        setCalories(initialFood.calories || '');
+        setCalories(initialFood.calories !== undefined ? String(initialFood.calories) : '');
         setProtein(initialFood.protein || '');
         setCarbs(initialFood.carbs || '');
         setFat(initialFood.fat || '');
@@ -44,7 +51,7 @@ export default function FoodFormModal({
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name.trim()) return;
 
@@ -53,17 +60,31 @@ export default function FoodFormModal({
       .map((s) => s.trim())
       .filter(Boolean);
 
-    onSave({
-      id: initialFood ? initialFood.id : undefined,
-      name: name.trim(),
-      mealType,
-      ingredients: ingArray,
-      calories: calories ? Number(calories) : 250,
-      protein: protein ? (protein.endsWith('g') ? protein : `${protein}g`) : '12g',
-      carbs: carbs ? (carbs.endsWith('g') ? carbs : `${carbs}g`) : '35g',
-      fat: fat ? (fat.endsWith('g') ? fat : `${fat}g`) : '8g',
-    });
-    onClose();
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    const formattedProtein = protein.trim() ? (protein.endsWith('g') ? protein.trim() : `${protein.trim()}g`) : '0g';
+    const formattedCarbs = carbs.trim() ? (carbs.endsWith('g') ? carbs.trim() : `${carbs.trim()}g`) : '0g';
+    const formattedFat = fat.trim() ? (fat.endsWith('g') ? fat.trim() : `${fat.trim()}g`) : '0g';
+
+    try {
+      await onSave({
+        id: initialFood ? (initialFood.id || initialFood.foodId) : undefined,
+        name: name.trim(),
+        mealType,
+        ingredients: ingArray,
+        calories: calories ? Number(calories) : 0,
+        protein: formattedProtein,
+        carbs: formattedCarbs,
+        fat: formattedFat,
+      });
+      onClose();
+    } catch (err) {
+      console.error('Error saving food in modal:', err);
+      setErrorMessage(err.message || 'Failed to save food item');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -86,12 +107,21 @@ export default function FoodFormModal({
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors"
+            disabled={isSubmitting}
+            className="p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors disabled:opacity-50"
             aria-label="Close modal"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
+
+        {/* Error Message Banner */}
+        {errorMessage && (
+          <div className="mx-6 mt-4 p-3 bg-rose-50 border border-rose-200 rounded-2xl flex items-start space-x-2 text-rose-700 text-xs">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+            <span className="font-medium">{errorMessage}</span>
+          </div>
+        )}
 
         {/* Modal Body Form */}
         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4 flex-1">
@@ -100,10 +130,11 @@ export default function FoodFormModal({
             <input
               type="text"
               required
-              placeholder="e.g., Paneer Tikka Salad"
+              placeholder="Enter food name (e.g., Chicken Biryani)"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+              disabled={isSubmitting}
+              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 disabled:opacity-60"
             />
           </div>
 
@@ -112,7 +143,8 @@ export default function FoodFormModal({
             <select
               value={mealType}
               onChange={(e) => setMealType(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+              disabled={isSubmitting}
+              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 disabled:opacity-60"
             >
               {MEAL_TYPES.map((type) => (
                 <option key={type} value={type}>
@@ -128,10 +160,11 @@ export default function FoodFormModal({
             </label>
             <textarea
               rows={3}
-              placeholder="e.g., Low-fat Paneer, Bell Peppers, Mint Chutney, Chaat Masala"
+              placeholder="Enter ingredients (e.g., Rice, Chicken, Onion, Spices)"
               value={ingredients}
               onChange={(e) => setIngredients(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+              disabled={isSubmitting}
+              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 disabled:opacity-60"
             />
             <p className="text-[11px] text-slate-400 mt-1">Separate multiple ingredients with commas.</p>
           </div>
@@ -141,40 +174,44 @@ export default function FoodFormModal({
               <label className="block text-xs font-bold text-slate-700 mb-1">Calories (kcal)</label>
               <input
                 type="number"
-                placeholder="250"
+                placeholder="550"
                 value={calories}
                 onChange={(e) => setCalories(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                disabled={isSubmitting}
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 disabled:opacity-60"
               />
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">Protein</label>
               <input
                 type="text"
-                placeholder="15g"
+                placeholder="30g"
                 value={protein}
                 onChange={(e) => setProtein(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                disabled={isSubmitting}
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 disabled:opacity-60"
               />
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">Carbs</label>
               <input
                 type="text"
-                placeholder="30g"
+                placeholder="70g"
                 value={carbs}
                 onChange={(e) => setCarbs(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                disabled={isSubmitting}
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 disabled:opacity-60"
               />
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">Fat</label>
               <input
                 type="text"
-                placeholder="8g"
+                placeholder="18g"
                 value={fat}
                 onChange={(e) => setFat(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                disabled={isSubmitting}
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 disabled:opacity-60"
               />
             </div>
           </div>
@@ -183,15 +220,24 @@ export default function FoodFormModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors"
+              disabled={isSubmitting}
+              className="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl transition-colors shadow-md shadow-emerald-600/20"
+              disabled={isSubmitting}
+              className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl transition-colors shadow-md shadow-emerald-600/20 disabled:opacity-60 flex items-center space-x-2"
             >
-              {initialFood ? 'Update Food' : 'Save Food Item'}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Saving to Cloud...</span>
+                </>
+              ) : (
+                <span>{initialFood ? 'Update Food' : 'Save Food Item'}</span>
+              )}
             </button>
           </div>
         </form>
