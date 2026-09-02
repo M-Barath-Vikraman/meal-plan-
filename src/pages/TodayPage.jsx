@@ -3,6 +3,7 @@ import { getPlanByDate, toggleMealCompletion, deleteMealFromPlan, addMealToPlan 
 import { getTodayDateString, formatDateReadable } from '../utils/dateUtils';
 import MealSection from '../components/MealSection';
 import AddMealModal from '../components/AddMealModal';
+import ShoppingModal from '../components/ShoppingModal';
 import { useOutletContext } from 'react-router-dom';
 import { Flame, CheckCircle, RefreshCw } from 'lucide-react';
 
@@ -22,6 +23,10 @@ export default function TodayPage() {
   // Add Meal modal state
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [targetMealType, setTargetMealType] = useState('Lunch');
+
+  // Shopping modal state
+  const [shoppingModalOpen, setShoppingModalOpen] = useState(false);
+  const [selectedShoppingMeal, setSelectedShoppingMeal] = useState(null);
 
   const { showNotification } = useOutletContext() || {};
 
@@ -80,6 +85,11 @@ export default function TodayPage() {
     if (showNotification) {
       showNotification(`Added "${mealData.name}" to ${mealData.mealType}`);
     }
+  };
+
+  const handleOpenShopping = (meal) => {
+    setSelectedShoppingMeal(meal);
+    setShoppingModalOpen(true);
   };
 
   // Group meals by section
@@ -162,6 +172,7 @@ export default function TodayPage() {
               onToggleComplete={handleToggleComplete}
               onDeleteMeal={handleDeleteMeal}
               onOpenAddModal={handleOpenAddModal}
+              onOpenShopping={handleOpenShopping}
             />
           ))}
         </div>
@@ -174,6 +185,15 @@ export default function TodayPage() {
         targetMealType={targetMealType}
         targetDateStr={todayStr}
         onAddMeal={handleAddMealSubmit}
+      />
+
+      {/* Shopping Modal */}
+      <ShoppingModal
+        isOpen={shoppingModalOpen}
+        onClose={() => setShoppingModalOpen(false)}
+        meal={selectedShoppingMeal}
+        dateStr={todayStr}
+        onShoppingSaved={loadTodayMeals}
       />
     </div>
   );

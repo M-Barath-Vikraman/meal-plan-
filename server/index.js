@@ -14,6 +14,7 @@ import mealPlanRoutes from './routes/mealPlanRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
 import googleRoutes from './routes/googleRoutes.js';
+import aiRoutes from './routes/aiRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -32,6 +33,7 @@ app.use('/api/plans', mealPlanRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/uploads', uploadRoutes);
 app.use('/api/google', googleRoutes);
+app.use('/api/ai', aiRoutes);
 
 // Catch-all for unknown /api/* endpoints (returns JSON 404)
 app.use('/api', notFoundHandler);

@@ -17,7 +17,7 @@ export default function AiChatModal({ isOpen, onClose, onAddAiMealToPlan }) {
     {
       id: 'welcome',
       sender: 'ai',
-      text: "Namaste! I'm your SmartMeal AI Assistant. Ask me for healthy Indian recipe ideas, macro recommendations, or scan a meal photo!",
+      text: "Namaste! I'm SmartMeal AI Assistant. Ask me for healthy Indian recipe ideas, macro recommendations, or scan a meal photo!",
       timestamp: 'Just now',
     },
   ]);
@@ -56,12 +56,13 @@ export default function AiChatModal({ isOpen, onClose, onAddAiMealToPlan }) {
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
 
+    const previousHistory = [...messages];
     setMessages((prev) => [...prev, userMsg]);
     setInputPrompt('');
     setIsSending(true);
 
     try {
-      const aiResponse = await sendChatMessage(userText);
+      const aiResponse = await sendChatMessage(userText, previousHistory);
       setMessages((prev) => [...prev, aiResponse]);
     } catch (err) {
       setMessages((prev) => [
@@ -69,7 +70,7 @@ export default function AiChatModal({ isOpen, onClose, onAddAiMealToPlan }) {
         {
           id: `err_${Date.now()}`,
           sender: 'ai',
-          text: "I couldn't process that right now. Please try again!",
+          text: err.message || "I couldn't process that right now. Please try again!",
           timestamp: 'Now',
         },
       ]);
@@ -80,11 +81,11 @@ export default function AiChatModal({ isOpen, onClose, onAddAiMealToPlan }) {
 
   const handlePhotoUploadSim = async (e) => {
     const file = e.target.files?.[0];
+    if (!file) return;
     setIsScanning(true);
     try {
       const result = await analyzeFoodPhoto(file);
       setScannedResult(result);
-      // Add message about scanned meal
       const scanMsg = {
         id: `scan_${Date.now()}`,
         sender: 'ai',
@@ -134,7 +135,7 @@ export default function AiChatModal({ isOpen, onClose, onAddAiMealToPlan }) {
               </div>
               <div>
                 <h3 className="font-bold text-base leading-tight">SmartMeal AI Chef</h3>
-                <p className="text-[11px] text-emerald-100 font-medium">Personalized Recipe & Photo Scanner</p>
+                <p className="text-[11px] text-emerald-100 font-medium">Powered by Google Gemini</p>
               </div>
             </div>
 
@@ -238,7 +239,7 @@ export default function AiChatModal({ isOpen, onClose, onAddAiMealToPlan }) {
             {isSending && (
               <div className="flex items-center space-x-2 text-slate-400 text-xs italic pl-9">
                 <Sparkles className="w-3.5 h-3.5 animate-spin text-emerald-600" />
-                <span>AI Chef is typing recipe suggestions...</span>
+                <span>SmartMeal AI is thinking...</span>
               </div>
             )}
 
@@ -270,7 +271,6 @@ export default function AiChatModal({ isOpen, onClose, onAddAiMealToPlan }) {
           {/* Input Footer */}
           <div className="p-3 bg-white border-t border-slate-200">
             <form onSubmit={handleSend} className="flex items-center space-x-2">
-              {/* Photo Upload Sim Button */}
               <label
                 className="p-2.5 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-600 hover:text-emerald-700 cursor-pointer transition-colors border border-slate-200"
                 title="Scan meal photo"

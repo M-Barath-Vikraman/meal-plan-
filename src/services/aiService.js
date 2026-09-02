@@ -1,78 +1,32 @@
-/**
- * @file aiService.js
- * Service module simulating SmartMeal AI Chef & Nutritionist.
- * 
- * TODO [Phase 2B - AWS Integration]:
- * Migrate photo scanning to `apiClient.post('/uploads/presign')` + S3 upload + Amazon Bedrock/Gemini API backend call.
- */
-
-const MOCK_AI_RESPONSES = [
-  "Based on your dietary preferences, I recommend adding **High Protein Moong Dal Cheela** to your breakfast. It provides 16g of protein and keeps you energetic!",
-  "Here is a great quick lunch idea: **Palak Paneer with Brown Rice & Cucumber Salad**. Packed with iron and healthy fats!",
-  "Looking for a light evening snack? Try **Roasted Makhana with Green Tea**. It has less than 120 calories and rich anti-oxidants.",
-  "For dinner, a **Grilled Paneer Salad with Mint Yogurt Dressing** gives you great protein without heavy carbohydrates before sleep."
-];
+import { apiClient } from './apiClient';
 
 /**
- * Send a prompt message to the AI Assistant.
- * @param {string} userPrompt 
- * @returns {Promise<{ id: string, sender: 'ai', text: string, timestamp: string, suggestedRecipe?: Object }>}
+ * Send a prompt message and recent chat history to the Gemini AI Assistant via server API.
+ * @param {string} userPrompt - User message text
+ * @param {Array<{sender: string, text: string}>} history - Recent conversation history turns
+ * @returns {Promise<{ id: string, sender: 'ai', text: string, timestamp: string }>}
  */
-export async function sendChatMessage(userPrompt) {
-  await new Promise((resolve) => setTimeout(resolve, 800));
+export async function sendChatMessage(userPrompt, history = []) {
+  try {
+    const formattedHistory = Array.isArray(history)
+      ? history.map((m) => ({ sender: m.sender, text: m.text }))
+      : [];
 
-  const promptLower = userPrompt.toLowerCase();
-  let responseText = "";
-  let recipeSuggestion = null;
+    const response = await apiClient.post('/ai/chat', {
+      message: userPrompt,
+      history: formattedHistory,
+    });
 
-  if (promptLower.includes('breakfast') || promptLower.includes('morning')) {
-    responseText = "Here is a nutrient-dense Indian breakfast recipe tailored for your active day!";
-    recipeSuggestion = {
-      name: 'Sprouted Oats & Veggie Upma',
-      mealType: 'Breakfast',
-      ingredients: ['Semolina / Oats', 'Sprouted Moong', 'Curry Leaves', 'Mustard Seeds', 'Carrots', 'Green Peas'],
-      calories: 310,
-      protein: '14g',
-      carbs: '46g',
-      fat: '7g',
-      description: 'A traditional wholesome South Indian breakfast elevated with sprouts and oats for extra fiber and protein.'
+    return {
+      id: `ai_msg_${Date.now()}`,
+      sender: 'ai',
+      text: response.reply,
+      timestamp: response.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
-  } else if (promptLower.includes('lunch') || promptLower.includes('protein')) {
-    responseText = "I found a perfect high-protein lunch option for your meal plan!";
-    recipeSuggestion = {
-      name: 'Tofu & Mixed Veggie Soya Stir-fry',
-      mealType: 'Lunch',
-      ingredients: ['Firm Tofu / Paneer', 'Soya Chunks', 'Bell Peppers', 'Broccoli', 'Soy-Ginger Sauce', 'Brown Rice'],
-      calories: 450,
-      protein: '28g',
-      carbs: '42g',
-      fat: '14g',
-      description: 'A delicious lean protein packed bowl infused with fresh aromatic ginger and crunchy vegetables.'
-    };
-  } else if (promptLower.includes('dinner') || promptLower.includes('light')) {
-    responseText = "For a light and easy-to-digest dinner, here is a healthy choice:";
-    recipeSuggestion = {
-      name: 'Panchratna Dal Khichdi with Roasted Papad',
-      mealType: 'Dinner',
-      ingredients: ['5 Lentil Mix', 'Brown Rice', 'Cumin Seed Tadka', 'Desi Ghee', 'Turmeric'],
-      calories: 370,
-      protein: '15g',
-      carbs: '58g',
-      fat: '8g',
-      description: 'Comforting, soothing dish high in complete protein amino acids.'
-    };
-  } else {
-    // Random fallback
-    responseText = MOCK_AI_RESPONSES[Math.floor(Math.random() * MOCK_AI_RESPONSES.length)];
+  } catch (err) {
+    console.error('[aiService.sendChatMessage] Error:', err);
+    throw new Error(err.message || "Sorry, I couldn't generate a response right now. Please try again.");
   }
-
-  return {
-    id: `ai_msg_${Date.now()}`,
-    sender: 'ai',
-    text: responseText,
-    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    suggestedRecipe: recipeSuggestion,
-  };
 }
 
 /**

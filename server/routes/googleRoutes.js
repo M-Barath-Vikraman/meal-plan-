@@ -1,13 +1,20 @@
 import { Router } from 'express';
-import { connectGoogle, handleGoogleCallback } from '../controllers/googleController.js';
+import requireAuth from '../middleware/requireAuth.js';
+import {
+  getGoogleAuthUrl,
+  getGoogleStatus,
+  handleGoogleCallback,
+  syncShopping,
+} from '../controllers/googleController.js';
 
 const router = Router();
 
-/**
- * Google integrations routes placeholder.
- * Future Integration: Google Calendar & Tasks APIs.
- */
-router.get('/connect', connectGoogle);
-router.get('/callback', handleGoogleCallback);
+// Protect all Google API routes with authentication middleware
+router.use(requireAuth);
+
+router.get('/auth-url', getGoogleAuthUrl);
+router.get('/status', getGoogleStatus);
+router.post('/callback', handleGoogleCallback);
+router.post('/sync-shopping', syncShopping);
 
 export default router;

@@ -24,6 +24,7 @@ export default function MealSection({
   onToggleComplete,
   onDeleteMeal,
   onOpenAddModal,
+  onOpenShopping,
 }) {
   const IconComponent = MEAL_ICONS[mealType] || Utensils;
   const colorStyle = MEAL_COLORS[mealType] || 'text-slate-600 bg-slate-50 border-slate-200';
@@ -69,6 +70,7 @@ export default function MealSection({
               meal={meal}
               onToggleComplete={onToggleComplete}
               onDelete={onDeleteMeal}
+              onOpenShopping={onOpenShopping}
             />
           ))}
         </div>

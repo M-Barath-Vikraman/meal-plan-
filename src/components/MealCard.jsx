@@ -1,7 +1,7 @@
 import React from 'react';
-import { Check, Trash2, Flame } from 'lucide-react';
+import { Check, Trash2, Flame, ShoppingCart } from 'lucide-react';
 
-export default function MealCard({ meal, onToggleComplete, onDelete }) {
+export default function MealCard({ meal, onToggleComplete, onDelete, onOpenShopping }) {
   const isCompleted = meal.completed;
 
   return (
@@ -64,15 +64,28 @@ export default function MealCard({ meal, onToggleComplete, onDelete }) {
           </div>
         </div>
 
-        {/* Delete action */}
-        <button
-          onClick={() => onDelete(meal.id)}
-          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors opacity-80 group-hover:opacity-100"
-          title="Delete meal from plan"
-          aria-label="Delete meal"
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
+        {/* Card Actions: Shopping & Delete */}
+        <div className="flex items-center space-x-1 shrink-0">
+          {onOpenShopping && (
+            <button
+              onClick={() => onOpenShopping(meal)}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors opacity-80 group-hover:opacity-100"
+              title="Manage ingredient availability & sync to Google"
+              aria-label="Open shopping modal"
+            >
+              <ShoppingCart className="w-4 h-4" />
+            </button>
+          )}
+
+          <button
+            onClick={() => onDelete(meal.id)}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors opacity-80 group-hover:opacity-100"
+            title="Delete meal from plan"
+            aria-label="Delete meal"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
       </div>
     </div>
   );

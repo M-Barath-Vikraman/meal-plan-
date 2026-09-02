@@ -11,6 +11,7 @@ export default function DailyPlanView({
   onToggleComplete,
   onDeleteMeal,
   onOpenAddModal,
+  onOpenShopping,
 }) {
   const isToday = isTodayDate(dateStr);
 
@@ -96,6 +97,7 @@ export default function DailyPlanView({
             onToggleComplete={onToggleComplete}
             onDeleteMeal={onDeleteMeal}
             onOpenAddModal={onOpenAddModal}
+            onOpenShopping={onOpenShopping}
           />
         ))}
       </div>

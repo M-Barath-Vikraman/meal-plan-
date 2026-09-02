@@ -270,6 +270,7 @@ export async function createPlanItemForUser(userId, planData) {
     ingredients: Array.isArray(planData.ingredients) ? planData.ingredients : [],
     calories: Number(planData.calories) || 0,
     completed: false,
+    shopping: null,
     createdAt: timestamp,
     updatedAt: timestamp,
   };
@@ -299,6 +300,39 @@ export async function togglePlanItemCompletionForUser(userId, dateStr, planId) {
     userId,
     Userid: userId,
     completed: !targetItem.completed,
+    updatedAt: new Date().toISOString(),
+  };
+
+  const putCmd = new PutCommand({
+    TableName: PLANS_TABLE,
+    Item: updatedItem,
+  });
+
+  await docClient.send(putCmd);
+  return updatedItem;
+}
+
+/**
+ * Update shopping data for a planned meal item in DynamoDB smartmeal-plans.
+ */
+export async function updatePlanShoppingForUser(userId, dateStr, planId, shoppingData) {
+  const items = await getPlanByDateForUser(userId, dateStr);
+  const targetItem = items.find((i) => i.planId === planId || i.id === planId);
+
+  if (!targetItem) {
+    return null;
+  }
+
+  const updatedItem = {
+    ...targetItem,
+    userId,
+    Userid: userId,
+    shopping: {
+      items: shoppingData.items || [],
+      googleCalendarEventId: shoppingData.googleCalendarEventId || null,
+      googleTaskId: shoppingData.googleTaskId || null,
+      lastSyncedAt: new Date().toISOString(),
+    },
     updatedAt: new Date().toISOString(),
   };
 

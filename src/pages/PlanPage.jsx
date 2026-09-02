@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import CalendarView from '../components/CalendarView';
 import DailyPlanView from '../components/DailyPlanView';
 import AddMealModal from '../components/AddMealModal';
+import ShoppingModal from '../components/ShoppingModal';
 import { getMonthlySummary, getPlanByDate, toggleMealCompletion, deleteMealFromPlan, addMealToPlan } from '../services/mealPlanService';
 import { getTodayDateString } from '../utils/dateUtils';
 import { useOutletContext } from 'react-router-dom';
@@ -23,6 +24,10 @@ export default function PlanPage() {
   // Add meal modal
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [targetMealType, setTargetMealType] = useState('Lunch');
+
+  // Shopping modal state
+  const [shoppingModalOpen, setShoppingModalOpen] = useState(false);
+  const [selectedShoppingMeal, setSelectedShoppingMeal] = useState(null);
 
   const { showNotification } = useOutletContext() || {};
 
@@ -80,6 +85,11 @@ export default function PlanPage() {
     if (showNotification) {
       showNotification(`Added "${mealData.name}" to ${mealData.mealType} on ${selectedDateStr}`);
     }
+  };
+
+  const handleOpenShopping = (meal) => {
+    setSelectedShoppingMeal(meal);
+    setShoppingModalOpen(true);
   };
 
   return (
@@ -150,6 +160,7 @@ export default function PlanPage() {
           onToggleComplete={handleToggleComplete}
           onDeleteMeal={handleDeleteMeal}
           onOpenAddModal={handleOpenAddModal}
+          onOpenShopping={handleOpenShopping}
         />
       )}
 
@@ -160,6 +171,15 @@ export default function PlanPage() {
         targetMealType={targetMealType}
         targetDateStr={selectedDateStr}
         onAddMeal={handleAddMealSubmit}
+      />
+
+      {/* Shopping Modal */}
+      <ShoppingModal
+        isOpen={shoppingModalOpen}
+        onClose={() => setShoppingModalOpen(false)}
+        meal={selectedShoppingMeal}
+        dateStr={selectedDateStr}
+        onShoppingSaved={() => loadDateMeals(selectedDateStr)}
       />
     </div>
   );
