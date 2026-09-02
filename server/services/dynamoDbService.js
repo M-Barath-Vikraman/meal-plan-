@@ -187,6 +187,67 @@ export async function getPlanByDateForUser(userId, dateStr) {
 }
 
 /**
+ * Query monthly summary for authenticated user from DynamoDB smartmeal-plans.
+ * @param {string} userId - Cognito sub
+ * @param {string} monthStr - Format YYYY-MM
+ */
+export async function getMonthlySummaryForUser(userId, monthStr) {
+  const parts = monthStr.split('-');
+  const formattedMonth = `${parts[0]}-${String(parts[1]).padStart(2, '0')}`;
+  const prefix = `DATE#${formattedMonth}`;
+
+  try {
+    let items = [];
+    try {
+      const command = new QueryCommand({
+        TableName: PLANS_TABLE,
+        KeyConditionExpression: 'userId = :userId AND begins_with(planKey, :prefix)',
+        ExpressionAttributeValues: {
+          ':userId': userId,
+          ':prefix': prefix,
+        },
+      });
+
+      const response = await docClient.send(command);
+      items = response.Items || [];
+    } catch (err) {
+      if (err.name === 'ValidationException' || err.message?.includes('schema')) {
+        const fallbackCmd = new QueryCommand({
+          TableName: PLANS_TABLE,
+          KeyConditionExpression: 'Userid = :userId AND begins_with(planKey, :prefix)',
+          ExpressionAttributeValues: {
+            ':userId': userId,
+            ':prefix': prefix,
+          },
+        });
+        const response = await docClient.send(fallbackCmd);
+        items = response.Items || [];
+      } else {
+        throw err;
+      }
+    }
+
+    const summary = {};
+    items.forEach((item) => {
+      const d = item.date;
+      if (!d) return;
+      if (!summary[d]) {
+        summary[d] = { count: 0, completedCount: 0 };
+      }
+      summary[d].count += 1;
+      if (item.completed) {
+        summary[d].completedCount += 1;
+      }
+    });
+
+    return summary;
+  } catch (err) {
+    console.error('[getMonthlySummaryForUser Error]:', err);
+    return {};
+  }
+}
+
+/**
  * Create a new meal plan item in DynamoDB smartmeal-plans.
  * planKey format: DATE#YYYY-MM-DD#MEAL#MealType#PLAN#plan-uuid
  */

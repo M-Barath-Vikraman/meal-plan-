@@ -1,6 +1,6 @@
 import React from 'react';
 import { getCalendarGrid, formatMonthYear } from '../utils/dateUtils';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, CheckCircle2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, CheckCircle2, Utensils } from 'lucide-react';
 
 export default function CalendarView({
   year,
@@ -87,9 +87,11 @@ export default function CalendarView({
             <div
               key={idx}
               onClick={() => onSelectDate(cell.dateStr)}
-              className={`min-h-[80px] sm:min-h-[96px] p-2 bg-white flex flex-col justify-between cursor-pointer transition-all hover:bg-emerald-50/30 ${
+              className={`min-h-[84px] sm:min-h-[100px] p-2 bg-white flex flex-col justify-between cursor-pointer transition-all hover:bg-emerald-50/30 group ${
                 !cell.isCurrentMonth ? 'text-slate-300 bg-slate-50/50' : 'text-slate-800'
-              } ${isSelected ? 'ring-2 ring-emerald-500 ring-inset bg-emerald-50/40' : ''}`}
+              } ${hasMeals ? 'bg-emerald-50/20' : ''} ${
+                isSelected ? 'ring-2 ring-emerald-500 ring-inset bg-emerald-50/40' : ''
+              }`}
             >
               {/* Day Number Header */}
               <div className="flex items-center justify-between">
@@ -106,25 +108,28 @@ export default function CalendarView({
                 </span>
 
                 {hasMeals && (
-                  <span className="flex items-center space-x-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                    <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                    <span className="hidden sm:inline">{summary.completedCount}/{summary.count}</span>
+                  <span className="flex items-center space-x-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                    <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
+                    <span>{summary.completedCount}/{summary.count}</span>
                   </span>
                 )}
               </div>
 
-              {/* Meals Indicator */}
-              <div className="mt-1 flex-1">
+              {/* Scheduled Meals Indicator */}
+              <div className="mt-1 flex-1 flex flex-col justify-end">
                 {hasMeals ? (
                   <div className="space-y-1">
-                    <div className="flex flex-wrap gap-1">
-                      <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 truncate max-w-full">
+                    <div className="inline-flex items-center space-x-1 text-[10px] font-bold text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-lg border border-emerald-200/80 max-w-full">
+                      <Utensils className="w-3 h-3 text-emerald-600 shrink-0" />
+                      <span className="truncate">
                         {summary.count} {summary.count === 1 ? 'meal' : 'meals'}
                       </span>
                     </div>
                   </div>
                 ) : cell.isCurrentMonth ? (
-                  <span className="text-[10px] text-slate-300 hidden sm:inline-block italic">Empty</span>
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] font-semibold text-emerald-600 flex items-center space-x-0.5">
+                    <span>+ Add plan</span>
+                  </div>
                 ) : null}
               </div>
             </div>

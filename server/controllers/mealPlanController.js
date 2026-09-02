@@ -1,5 +1,6 @@
 import {
   getPlanByDateForUser,
+  getMonthlySummaryForUser,
   createPlanItemForUser,
   togglePlanItemCompletionForUser,
   deletePlanItemForUser,
@@ -42,6 +43,29 @@ export async function getPlanByDate(req, res, next) {
       success: true,
       data: plans,
       date: dateStr,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * GET /api/plans/summary?month=YYYY-MM
+ * Query monthly meal plan summary for calendar view.
+ */
+export async function getMonthlySummary(req, res, next) {
+  try {
+    const userId = req.user.sub;
+    const now = new Date();
+    const defaultMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const monthStr = req.query.month || defaultMonth;
+
+    const summary = await getMonthlySummaryForUser(userId, monthStr);
+
+    res.status(200).json({
+      success: true,
+      data: summary,
+      month: monthStr,
     });
   } catch (err) {
     next(err);
