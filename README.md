@@ -3,7 +3,7 @@
 SmartMeal is a unified, single-repository web application containing a React 19 frontend and a Node.js/Express API server designed for intelligent Indian meal scheduling, macro tracking, food library management, and AI-assisted recipe suggestions.
 
 ---
-## 🚀 Implemented Features
+##  Implemented Features
 
 ### Core Features
 - **Today's Schedule**: 5 meal sections (**Pre-Breakfast**, **Breakfast**, **Mid-morning Snacks**, **Lunch**, **Dinner**) with item completion toggles and calorie progress.
@@ -42,27 +42,7 @@ For complete, step-by-step AWS Console creation instructions, see the [Cognito U
 ---
 
 
-
-## 📡 API Endpoint Summary Table
-
-| HTTP Method | Endpoint Path | Auth Protection | Current State | Future AWS Integration |
-|---|---|---|---|---|
-| `GET` | `/api/health` | **Public** | Active (HTTP 200 OK) | **AWS ALB Target Group** health check |
-| `GET` | `/api/auth/me` | **Protected (Cognito JWT)** | Active (Verified User Payload) | **AWS Cognito User Pools** JWT Claims |
-| `GET` | `/api/foods` | Public / Mock | Active Placeholder (In-memory) | **DynamoDB** `smartmeal-foods` table |
-| `POST` | `/api/foods` | Public / Mock | Active Placeholder (In-memory) | **DynamoDB** PutItem Command |
-| `PUT` | `/api/foods/:id` | Public / Mock | Active Placeholder (In-memory) | **DynamoDB** UpdateItem Command |
-| `DELETE` | `/api/foods/:id` | Public / Mock | Active Placeholder (In-memory) | **DynamoDB** DeleteItem Command |
-| `GET` | `/api/plans?date=YYYY-MM-DD` | Public / Mock | Active Placeholder (In-memory) | **DynamoDB** `smartmeal-plans` query |
-| `POST` | `/api/plans` | Public / Mock | Active Placeholder (In-memory) | **DynamoDB** PutItem Command |
-| `PATCH` | `/api/plans/:id/complete` | Public / Mock | Active Placeholder (In-memory) | **DynamoDB** UpdateItem Command |
-| `DELETE` | `/api/plans/:id` | Public / Mock | Active Placeholder (In-memory) | **DynamoDB** DeleteItem Command |
-| `POST` | `/api/uploads/presign` | Public / Mock | Active Placeholder | **AWS S3** Presigned URL |
-| `GET` | `/api/google/connect` | Public / Mock | Active Placeholder | **Google OAuth 2.0** Authorization URL |
-
----
-
-## 🧪 Testing Steps
+## Testing Steps
 
 ### 1. Local Development Execution
 ```bash
