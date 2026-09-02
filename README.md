@@ -33,14 +33,14 @@ For complete, step-by-step AWS Console creation instructions, see the [Cognito U
 |  [AuthContext] ──(Stores Tokens & User State)                                     |
 |         │                                                                         |
 |         ▼ (Attaches Bearer JWT Access Token)                                      |
-|  apiClient.get('/auth/me') ──> [Express Server] ──> [requireAuth Middleware]     |
+|  apiClient.get('/auth/me') ──> [Express Server] ──> [requireAuth Middleware]      |
 |                                                             │                     |
 |                                                             ▼                     |
 |                                                  [aws-jwt-verify Validation]      |
 +-----------------------------------------------------------------------------------+
+```
 
 ---
-
 
 ## Testing Steps
 
